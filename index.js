@@ -139,15 +139,25 @@ async function updateEmployeeManager() {
     choices: managers,
   });
 
-  const updateQuery = 'UPDATE employees SET manager_id = ? WHERE id = ?';
-  db.query(updateQuery, [managerId, employeeId], (err, result) => {
-    if (err) {
-      console.error('Error updating employee manager:', err);
+  // Update all employees reporting to the selected employee
+  const updateManagerQuery = 'UPDATE employees SET manager_id = ? WHERE manager_id = ?';
+  db.query(updateManagerQuery, [managerId, employeeId], (updateErr, updateResult) => {
+    if (updateErr) {
+      console.error('Error updating employee managers:', updateErr);
       return;
     }
 
-    console.log('Employee manager updated successfully!');
-    manageDatabase();
+    // Update the selected employee's manager
+    const updateQuery = 'UPDATE employees SET manager_id = ? WHERE id = ?';
+    db.query(updateQuery, [managerId, employeeId], (err, result) => {
+      if (err) {
+        console.error('Error updating employee manager:', err);
+        return;
+      }
+
+      console.log('Employee manager updated successfully!');
+      manageDatabase();
+    });
   });
 }
 
@@ -265,15 +275,25 @@ async function deleteEmployee() {
     choices: employees,
   });
 
-  const deleteQuery = 'DELETE FROM employees WHERE id = ?';
-  db.query(deleteQuery, [employeeId], (err, result) => {
-    if (err) {
-      console.error('Error deleting employee:', err);
+  // Update all employees reporting to the selected employee
+  const updateManagerQuery = 'UPDATE employees SET manager_id = NULL WHERE manager_id = ?';
+  db.query(updateManagerQuery, [employeeId], (updateErr, updateResult) => {
+    if (updateErr) {
+      console.error('Error updating employee managers:', updateErr);
       return;
     }
 
-    console.log('Employee deleted successfully!');
-    manageDatabase();
+    // Now you can safely delete the employee
+    const deleteQuery = 'DELETE FROM employees WHERE id = ?';
+    db.query(deleteQuery, [employeeId], (deleteErr, deleteResult) => {
+      if (deleteErr) {
+        console.error('Error deleting employee:', deleteErr);
+        return;
+      }
+
+      console.log('Employee deleted successfully!');
+      manageDatabase();
+    });
   });
 }
 
@@ -287,7 +307,14 @@ async function viewTotalUtilizedBudget() {
     choices: departments,
   });
 
-  const budgetQuery = 'SELECT SUM(salary) AS total_budget FROM roles WHERE department_id = ?';
+  // Query to sum up the salaries of all employees in the selected department
+  const budgetQuery = `
+    SELECT SUM(roles.salary) AS total_budget
+    FROM employees
+    JOIN roles ON employees.role_id = roles.id
+    WHERE roles.department_id = ?;
+  `;
+
   db.query(budgetQuery, [departmentId], (err, result) => {
     if (err) {
       console.error('Error calculating total utilized budget:', err);
