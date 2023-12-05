@@ -11,6 +11,9 @@ This Employee Tracker application allows you to manage departments, roles, and e
 - [Contributing](#contributing)
 - [License](#license)
 
+## Demo
+[Untitled_ Dec 5, 2023 12_56 AM.webm](https://github.com/Jay1194/Employee-Tracker/assets/105843570/de5c270b-b70a-4ef7-bf17-a90c9e9258b6)
+
 ## Installation
 
 1. Clone the repository:
